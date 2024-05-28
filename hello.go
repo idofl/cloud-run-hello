@@ -177,6 +177,15 @@ func main() {
 		fmt.Fprintf(w, "User-agent: *\nDisallow: /\n")
 	})
 
+	http.HandleFunc("/headers", func(w http.ResponseWriter, r *http.Request) {
+		for name, values := range r.Header {
+			// Loop over all values for the name.
+			for _, value := range values {
+				fmt.Fprintln(w, name, value)
+			}
+		}
+	})
+
 	fs := http.FileServer(http.Dir("./assets"))
 	http.Handle("/assets/", http.StripPrefix("/assets/", fs))
 
