@@ -186,33 +186,42 @@ func main() {
 			bodyBytes, err = io.ReadAll(r.Body)
 			if err != nil {
 				fmt.Fprintln(w, "Body reading error: %v", err)
+				log.Print("Body reading error: %v", err)
 				return
 			}
 			defer r.Body.Close()
 		}
 
 		fmt.Fprintln(w, "Headers:")
+		log.Print("Headers:")
 		for name, values := range r.Header {
 			// Loop over all values for the name.
 			for _, value := range values {
 				fmt.Fprintln(w, name, value)
+				log.Print(name, value)
 			}
 		}
 		fmt.Fprintln(w)
+		fmt.Println()
 
 		if len(bodyBytes) > 0 {
 			fmt.Fprintln(w, "Body:")
 			fmt.Fprintln(w, string(bodyBytes))
+			log.Print("Body:")
+			log.Print(string(bodyBytes))
 		} else {
 			fmt.Fprintln(w, "Body: No Body Supplied\n")
+			log.Print("Body: No Body Supplied\n")
 		}
 
 	})
 
 	http.HandleFunc("/env", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "Environment variables for URL", r.Host, r.URL.Path)
+		log.Print("Environment variables for URL", r.Host, r.URL.Path)
 		for _, e := range os.Environ() {
 			fmt.Fprintln(w, e)
+			log.Print(e)
 		}
 	})
 
