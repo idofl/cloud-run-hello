@@ -197,8 +197,8 @@ func main() {
 		for name, values := range r.Header {
 			// Loop over all values for the name.
 			for _, value := range values {
-				fmt.Fprintln(w, name, value)
-				log.Print(name, value)
+				fmt.Fprintln(w, name, ": ", value)
+				log.Print(name, ": ", value)
 			}
 		}
 		fmt.Fprintln(w)
