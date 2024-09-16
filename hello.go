@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -177,17 +178,48 @@ func main() {
 		fmt.Fprintf(w, "User-agent: *\nDisallow: /\n")
 	})
 
-	http.HandleFunc("/headers", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/echo", func(w http.ResponseWriter, r *http.Request) {
+		var bodyBytes []byte
+		var err error
+
+		if r.Body != nil {
+			bodyBytes, err = io.ReadAll(r.Body)
+			if err != nil {
+				fmt.Fprintln(w, "Body reading error: %v", err)
+				return
+			}
+			defer r.Body.Close()
+		}
+
+		fmt.Fprintln(w, "Headers:")
 		for name, values := range r.Header {
 			// Loop over all values for the name.
 			for _, value := range values {
 				fmt.Fprintln(w, name, value)
 			}
 		}
+		fmt.Fprintln(w)
+
+		if len(bodyBytes) > 0 {
+			fmt.Fprintln(w, "Body:")
+			fmt.Fprintln(w, string(bodyBytes))
+		} else {
+			fmt.Fprintln(w, "Body: No Body Supplied\n")
+		}
+
+	})
+
+	http.HandleFunc("/env", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "Environment variables for URL", r.Host, r.URL.Path)
+		for _, e := range os.Environ() {
+			fmt.Fprintln(w, e)
+		}
 	})
 
 	fs := http.FileServer(http.Dir("./assets"))
 	http.Handle("/assets/", http.StripPrefix("/assets/", fs))
+
+	http.Handle("/pages/", http.StripPrefix("/pages/", http.FileServer(http.Dir("./pages"))))
 
 	port := os.Getenv("PORT")
 	if port == "" {
